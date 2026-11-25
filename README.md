@@ -25,14 +25,14 @@ Bij fouten (geen tekst gevonden, geen internet, camera werkt niet, …) toont de
 
 ### Voor volwassenen: het tandwiel
 
-Linksboven op het startscherm staat een semi-transparant tandwiel. **Twee seconden ingedrukt houden** opent het verborgen instellingenmenu met daarin de OpenRouter API-sleutel en het AI-model. De sleutel staat uitsluitend in de localStorage van het toestel en wordt alleen naar OpenRouter gestuurd bij het herkennen van een pagina.
+Linksboven op het startscherm staat een semi-transparant tandwiel. **Twee seconden ingedrukt houden** opent het verborgen instellingenmenu. Daarin kies je de OCR-engine: **OpenRouter** (met API-sleutel en AI-model) of **lokaal** (Tesseract.js, volledig op het toestel zonder internet of sleutel). De OpenRouter-sleutel staat uitsluitend in de localStorage van het toestel en wordt alleen naar OpenRouter gestuurd bij het herkennen van een pagina.
 
 ## Onder de motorkap
 
 | Onderdeel | Technologie |
 |---|---|
 | Camera | Web `getUserMedia`, achtercamera, frame via canvas (max. 1600 px JPEG) |
-| Tekstherkenning | [OpenRouter](https://openrouter.ai) (standaard `google/gemini-2.5-flash`) met "verzin niets"-regel en `GEEN_TEKST`-sentinel tegen hallucinaties |
+| Tekstherkenning | [OpenRouter](https://openrouter.ai) (standaard `google/gemini-2.5-flash`) met "verzin niets"-regel en `GEEN_TEKST`-sentinel tegen hallucinaties, of volledig lokaal via [Tesseract.js](https://github.com/naptha/tesseract.js) (taal `nld`) — keuze in het ouders-menu |
 | Voorlezen | Web Speech API (`speechSynthesis`), Nederlandse stem, tekst in stukken per alinea/zin |
 | PWA | Manifest, service worker met offline-shell, installeerbaar op Android |
 | Framework | React 19 + TypeScript (strict) + Vite |
@@ -79,9 +79,9 @@ Elke push naar `main` bouwt en deployt automatisch naar GitHub Pages via `.githu
 
 ## Privacy
 
-- Foto's worden **alleen in het geheugen verwerkt** en nooit opgeslagen of verstuurd, behalve als data-URL naar OpenRouter voor de tekstherkenning.
+- Foto's worden **alleen in het geheugen verwerkt** en nooit opgeslagen. Bij de OpenRouter-engine wordt de foto als data-URL naar OpenRouter gestuurd voor de tekstherkenning; bij de lokale engine (Tesseract.js) verlaat de foto het toestel nooit.
 - Geen accounts, geen analytics, geen tracking.
-- De API-sleutel staat lokaal in `localStorage` en verlaat het toestel alleen richting OpenRouter.
+- De API-sleutel staat lokaal in `localStorage` en verlaat het toestel alleen richting OpenRouter (en alleen bij de OpenRouter-engine).
 
 ## Projectdocumentatie
 

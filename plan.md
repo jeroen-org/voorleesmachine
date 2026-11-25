@@ -7,7 +7,7 @@ Dit document beschrijft de gemaakte keuzes, de uitgevoerde stappen (met commits)
 | Onderwerp | Keuze | Motivatie |
 |---|---|---|
 | Platform | PWA (React + Vite + TypeScript) eerst | Beste testbaarheid (Vitest + Playwright), werkt direct in de browser; Android via Capacitor als latere stap |
-| OCR | Altijd AI via OpenRouter, standaardmodel `google/gemini-2.5-flash` | Zeer goede NL-kwaliteit, filtert paginanummers/bijschriften; kosten ≈ €0,05 per 100 pagina's, binnen de gratis tier praktisch €0 |
+| OCR | Standaard AI via OpenRouter (`google/gemini-2.5-flash`), of volledig lokaal via Tesseract.js (`nld`) — keuze in het ouders-menu | OpenRouter geeft zeer goede NL-kwaliteit en filtert paginanummers/bijschriften; lokale engine werkt zonder internet of sleutel en houdt foto's op het toestel |
 | TTS | Web Speech API (lokaal) | €0, direct, werkt offline op Android Chrome; cloud-stem als latere verbetering |
 | Taal | Alleen Nederlands | Kleinste scope, Nederlandstalige boeken |
 | Privacy | Foto's alleen in het geheugen, nooit bewaard | Doelgroep is kinderen (AVG-gevoelig) |
@@ -36,13 +36,15 @@ Dit document beschrijft de gemaakte keuzes, de uitgevoerde stappen (met commits)
 | 18 | GitHub Pages deployment | `4c371de` | Subpad-bestendig gemaakt (service worker, manifest, index.html: relatieve paden), deploy-workflow met `--base=/voorleesmachine/`, site op https://jeroenvdw.github.io/voorleesmachine/ | build-check: subpad-referenties correct in `dist/`; live URL 200 + sw.js/manifest bereikbaar; Deploy-run `success` |
 | 19 | Commit-identiteit vastgelegd | `31c26eb` | AGENTS.md: agent commit altijd als `Voorleesmachine <dev@voorleesmachine.local>`; menselijke commits blijven `jeroenvdw` | — |
 | 20 | README | — | README.md met live-URL, badges, screenshot van de live site (`docs/screenshot-home.png`), uitleg, commands, tests, deployment en privacy | — |
+| 21 | Lokale OCR-engine (Tesseract.js) | — | `tesseractOcr.ts` (IOcr) met hergebruikte worker, `nld` via CDN, cleanup van paginanummers/lege regels, timeout 90 s; `ocrEngine`-instelling (`openrouter` standaard / `local`); `createServices()` kiest de engine; ouders-menu met engine-toggle en verborgen sleutel/modelvelden bij `local` | lint/typecheck/build groen; 87 unit tests |
 
 ### Actuele status
 
 - Happy path werkt volledig op mocks (`?mock=1`) én met echte camera + OpenRouter + Web Speech; eerste gesproken woord binnen ~8 s na de foto.
-- 66 unit tests en 3 e2e-tests slagen; `lint`, `typecheck` en `build` zijn foutloos.
+- OCR draait standaard via OpenRouter; in het ouders-menu is ook een volledig lokale Tesseract.js-engine (`nld`) te kiezen die zonder internet of sleutel werkt.
+- 87 unit tests en 3 e2e-tests slagen; `lint`, `typecheck` en `build` zijn foutloos.
 - CI (GitHub Actions) draait lint, typecheck, unit tests en e2e op elke push.
-- Ontbrekend voor productiegebruik: een geldige OpenRouter API-key in het ouders-menu; zonder key toont de app de sleutel-foutstate.
+- Voor de OpenRouter-engine is een geldige API-key in het ouders-menu nodig; zonder key toont de app de sleutel-foutstate. De lokale engine heeft dat niet nodig.
 
 ## Vervolgstappen
 
@@ -70,8 +72,7 @@ Volgorde op volgorde van nut; elke stap = eigen commit met groene tests.
 
 ### Fase C — robuustheid (P2)
 
-8. **Tesseract.js als offline-OCR-fallback**: bij `no-internet` of ontbrekende sleutel lokaal OCR met Nederlandse `nld`-traineddata (lazy-load).
-   - DoD: fallback getest; app leest ook zonder internet; trager resultaat duidelijk gemarkeerd in tests.
+8. **Tesseract.js als offline-OCR-fallback**: ✅ gedaan (stap 21) — lokale `nld`-engine is nu een keuze in het ouders-menu. Vervolg: automatische fallback bij `no-internet`/ontbrekende sleutel en lazy-load van de worker.
 9. **Cloudflare Worker-proxy voor de API-key** (gratis tier): server-side key, browser stuurt geen geheim meer mee; ouders-menu krijgt proxy-URL-instelling.
    - DoD: OCR werkt via proxy; huidige key-pad blijft als alternatief werken.
 10. **Capacitor Android-build**: `@capacitor/core`/`cli`/`android` (expliciete goedkeuring nodig volgens AGENTS.md), APK-build, native camera/TTS-check; eventueel ML Kit-OCR-plugin als snelle on-device optie.

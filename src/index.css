@@ -449,6 +449,37 @@ button:disabled {
   outline-offset: 2px;
 }
 
+.parents-toggle {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.parents-toggle-btn {
+  flex: 1;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.3;
+  padding: 14px 12px;
+  border-radius: 14px;
+  border: 2px solid #d6d3d1;
+  background: #fff;
+  color: #57534e;
+  cursor: pointer;
+}
+
+.parents-toggle-btn.active {
+  border-color: var(--blue-border);
+  background: #eff6ff;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.parents-toggle-btn:focus-visible {
+  outline: 4px solid var(--blue-border);
+  outline-offset: 2px;
+}
+
 .parents-note {
   margin: 0;
   font-size: 13px;

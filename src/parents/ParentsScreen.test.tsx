@@ -22,6 +22,7 @@ describe('ParentsScreen', () => {
     expect(loadSettings(window.localStorage)).toEqual({
       apiKey: 'sk-or-test-123',
       model: 'google/gemini-2.0-flash-001',
+      ocrEngine: 'openrouter',
     })
     expect(screen.getByRole('img', { name: L.keyStored })).toBeInTheDocument()
   })
@@ -34,5 +35,17 @@ describe('ParentsScreen', () => {
     render(<ParentsScreen onBack={() => {}} />)
     expect(screen.getByLabelText('Geheime sleutel (OpenRouter)')).toHaveValue('sk-or-bestaand')
     expect(screen.getByLabelText('AI-model')).toHaveValue('mijn-model')
+  })
+
+  it('verbergt de sleutelvelden bij de lokale engine en bewaart die keuze', async () => {
+    const user = userEvent.setup()
+    render(<ParentsScreen onBack={() => {}} />)
+
+    expect(screen.getByLabelText('Geheime sleutel (OpenRouter)')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: L.ocrEngineLocal }))
+    expect(screen.queryByLabelText('Geheime sleutel (OpenRouter)')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: L.saveSettings }))
+    expect(loadSettings(window.localStorage).ocrEngine).toBe('local')
   })
 })

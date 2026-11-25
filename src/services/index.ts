@@ -3,6 +3,7 @@ import type { IOcr } from './ocr/IOcr'
 import type { ITts } from './tts/ITts'
 import { createBrowserCamera } from './camera/browserCamera'
 import { createOpenRouterOcr } from './ocr/openrouterOcr'
+import { createTesseractOcr } from './ocr/tesseractOcr'
 import { createWebSpeechTts, isWebSpeechAvailable } from './tts/webSpeechTts'
 import { createMockCamera } from './mock/mockCamera'
 import { createMockOcr, type MockOcrOptions } from './mock/mockOcr'
@@ -41,10 +42,16 @@ export function createServices(mock: boolean): Services {
   if (mock) return mockServices
   return {
     camera: createBrowserCamera(),
-    ocr: createOpenRouterOcr({
-      getApiKey: () => loadSettings().apiKey,
-      getModel: () => loadSettings().model,
-    }),
+    ocr: createOcrService(),
     tts: isWebSpeechAvailable() ? createWebSpeechTts() : mockServices.tts,
   }
+}
+
+function createOcrService(): IOcr {
+  const settings = loadSettings()
+  if (settings.ocrEngine === 'local') return createTesseractOcr()
+  return createOpenRouterOcr({
+    getApiKey: () => loadSettings().apiKey,
+    getModel: () => loadSettings().model,
+  })
 }

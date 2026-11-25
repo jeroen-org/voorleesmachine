@@ -34,7 +34,7 @@ Alle services zitten achter interfaces in `src/services/`; de UI kent alleen de 
 | Service | Interface | Productie-implementatie | Mock |
 |---|---|---|---|
 | Camera | `ICamera` (`src/services/camera/`) | `browserCamera.ts` — `getUserMedia` met achtercamera (`facingMode: environment`), frame naar canvas (max. 1600px, JPEG) | `mockCamera.ts` — tekent een nep-boekpagina op canvas |
-| OCR | `IOcr` (`src/services/ocr/`) | `openrouterOcr.ts` — POST naar `https://openrouter.ai/api/v1/chat/completions`, afbeelding als data-URL, prompt met "verzin niets"-regel en `GEEN_TEKST`-sentinel (tegen hallucinatie bij foto's zonder tekst), cleanup van paginanummers/bijschriften, standaardmodel `google/gemini-2.5-flash` (instelbaar), timeout 60 s; foutcodes: `no-api-key`, `no-internet`, `timeout`, `failed` | `mockOcr.ts` — geeft na korte vertraging een standaardverhaal; varianten via URL |
+| OCR | `IOcr` (`src/services/ocr/`) | `openrouterOcr.ts` — POST naar `https://openrouter.ai/api/v1/chat/completions`, afbeelding als data-URL, prompt met "verzin niets"-regel en `GEEN_TEKST`-sentinel (tegen hallucinatie bij foto's zonder tekst), cleanup van paginanummers/bijschriften, standaardmodel `google/gemini-2.5-flash` (instelbaar), timeout 60 s; foutcodes: `no-api-key`, `no-internet`, `timeout`, `failed` — of `tesseractOcr.ts` — volledig lokale herkenning via Tesseract.js (WASM), taal `nld` (taaldata via CDN), hergebruikt één worker, cleanup van paginanummers/lege regels, timeout 90 s; foutcodes: `timeout`, `failed`. De gekozen engine staat in de instellingen (`ocrEngine`) | `mockOcr.ts` — geeft na korte vertraging een standaardverhaal; varianten via URL |
 | TTS | `ITts` (`src/services/tts/`) | `webSpeechTts.ts` — Web Speech API (`speechSynthesis`), stemkeuze nl-NL, tekst in stukken per alinea/zinnen (max. ~200 tekens), volume-aanpassing herstart het huidige stuk; synthesefout zet de state op `failed` (leesscherm toont dan fout-icoon + volgende-pagina-knop) | `mockTts.ts` — simuleert spreken met timers; `failOnSpeak`-optie voor fouttests |
 
 De orchestratie (foto → OCR → voorlezen) staat in de state machine (`src/domain/state.ts`) en de hook `src/components/useVoorlees.ts`. Bij een leeg OCR-resultaat wordt automatisch één keer opnieuw geprobeerd.
@@ -45,9 +45,10 @@ De orchestratie (foto → OCR → voorlezen) staat in de state machine (`src/dom
 
 Het tandwiel staat linksboven op het startscherm en is bewust semi-transparant: kinderen kunnen er zo weinig mee. **2 seconden ingedrukt houden** opent het verborgen ouders-menu (`src/parents/ParentsScreen.tsx`, detectie via `HoldToOpenButton.tsx`). Daarin staat:
 
-- **Geheime sleutel (OpenRouter)** — de API-key die de OCR-service nodig heeft; opgeslagen in localStorage onder sleutel `voorleesmachine:settings` en uitsluitend naar OpenRouter verstuurd bij het herkennen van een pagina.
-- **AI-model** — het OpenRouter-model (standaard `google/gemini-2.5-flash`).
-- **Opslaan-knop** — slaat beide waarden op; het status-icoon erboven (sleutel/vinkje) toont of er al een sleutel staat.
+- **OCR-engine** — keuze tussen `openrouter` (standaard) en `local` (Tesseract.js, volledig op het toestel). Bij `local` worden de sleutel- en modelvelden verborgen.
+- **Geheime sleutel (OpenRouter)** — de API-key die de OCR-service nodig heeft; alleen zichtbaar bij de OpenRouter-engine; opgeslagen in localStorage onder sleutel `voorleesmachine:settings` en uitsluitend naar OpenRouter verstuurd bij het herkennen van een pagina.
+- **AI-model** — het OpenRouter-model (standaard `google/gemini-2.5-flash`); alleen zichtbaar bij de OpenRouter-engine.
+- **Opslaan-knop** — slaat de waarden op; het status-icoon erboven (sleutel/vinkje) toont of er al een sleutel staat.
 - **Terug-knop** — keert terug naar de app zonder iets te wijzigen.
 
 Kinderen hebben deze schermen normaal nooit te zien; zichtbare tekst is hier toegestaan (uitsluitend in het ouders-menu).

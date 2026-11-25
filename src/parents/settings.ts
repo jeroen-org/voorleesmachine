@@ -1,9 +1,13 @@
+export type OcrEngine = 'openrouter' | 'local'
+
 export type ParentsSettings = {
   apiKey: string
   model: string
+  ocrEngine: OcrEngine
 }
 
 export const DEFAULT_OCR_MODEL = 'google/gemini-2.5-flash'
+export const DEFAULT_OCR_ENGINE: OcrEngine = 'openrouter'
 
 const STORAGE_KEY = 'voorleesmachine:settings'
 
@@ -34,7 +38,11 @@ function defaultStorage(): Storage {
   return createMemoryStorage()
 }
 
-const emptySettings = (): ParentsSettings => ({ apiKey: '', model: DEFAULT_OCR_MODEL })
+const emptySettings = (): ParentsSettings => ({
+  apiKey: '',
+  model: DEFAULT_OCR_MODEL,
+  ocrEngine: DEFAULT_OCR_ENGINE,
+})
 
 export function loadSettings(storage: Storage = defaultStorage()): ParentsSettings {
   try {
@@ -46,6 +54,7 @@ export function loadSettings(storage: Storage = defaultStorage()): ParentsSettin
     return {
       apiKey: typeof record.apiKey === 'string' ? record.apiKey : '',
       model: typeof record.model === 'string' && record.model ? record.model : DEFAULT_OCR_MODEL,
+      ocrEngine: record.ocrEngine === 'local' ? 'local' : DEFAULT_OCR_ENGINE,
     }
   } catch {
     return emptySettings()
@@ -55,7 +64,11 @@ export function loadSettings(storage: Storage = defaultStorage()): ParentsSettin
 export function saveSettings(settings: ParentsSettings, storage: Storage = defaultStorage()): void {
   storage.setItem(
     STORAGE_KEY,
-    JSON.stringify({ apiKey: settings.apiKey.trim(), model: settings.model.trim() || DEFAULT_OCR_MODEL }),
+    JSON.stringify({
+      apiKey: settings.apiKey.trim(),
+      model: settings.model.trim() || DEFAULT_OCR_MODEL,
+      ocrEngine: settings.ocrEngine,
+    }),
   )
 }
 
