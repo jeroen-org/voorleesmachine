@@ -1,13 +1,20 @@
 export type OcrEngine = 'openrouter' | 'local'
+export type TtsEngine = 'local' | 'cloud'
 
 export type ParentsSettings = {
   apiKey: string
   model: string
   ocrEngine: OcrEngine
+  ttsEngine: TtsEngine
+  ttsVoice: string
+  cloudModel: string
+  cloudVoice: string
 }
 
 export const DEFAULT_OCR_MODEL = 'google/gemini-2.5-flash'
 export const DEFAULT_OCR_ENGINE: OcrEngine = 'openrouter'
+export const DEFAULT_TTS_ENGINE: TtsEngine = 'local'
+export const DEFAULT_CLOUD_MODEL = 'google/gemini-2.5-pro-tts'
 
 const STORAGE_KEY = 'voorleesmachine:settings'
 
@@ -42,6 +49,10 @@ const emptySettings = (): ParentsSettings => ({
   apiKey: '',
   model: DEFAULT_OCR_MODEL,
   ocrEngine: DEFAULT_OCR_ENGINE,
+  ttsEngine: DEFAULT_TTS_ENGINE,
+  ttsVoice: '',
+  cloudModel: DEFAULT_CLOUD_MODEL,
+  cloudVoice: '',
 })
 
 export function loadSettings(storage: Storage = defaultStorage()): ParentsSettings {
@@ -55,6 +66,10 @@ export function loadSettings(storage: Storage = defaultStorage()): ParentsSettin
       apiKey: typeof record.apiKey === 'string' ? record.apiKey : '',
       model: typeof record.model === 'string' && record.model ? record.model : DEFAULT_OCR_MODEL,
       ocrEngine: record.ocrEngine === 'local' ? 'local' : DEFAULT_OCR_ENGINE,
+      ttsEngine: record.ttsEngine === 'cloud' ? 'cloud' : DEFAULT_TTS_ENGINE,
+      ttsVoice: typeof record.ttsVoice === 'string' ? record.ttsVoice : '',
+      cloudModel: typeof record.cloudModel === 'string' && record.cloudModel ? record.cloudModel : DEFAULT_CLOUD_MODEL,
+      cloudVoice: typeof record.cloudVoice === 'string' ? record.cloudVoice : '',
     }
   } catch {
     return emptySettings()
@@ -68,6 +83,10 @@ export function saveSettings(settings: ParentsSettings, storage: Storage = defau
       apiKey: settings.apiKey.trim(),
       model: settings.model.trim() || DEFAULT_OCR_MODEL,
       ocrEngine: settings.ocrEngine,
+      ttsEngine: settings.ttsEngine,
+      ttsVoice: settings.ttsVoice.trim(),
+      cloudModel: settings.cloudModel.trim() || DEFAULT_CLOUD_MODEL,
+      cloudVoice: settings.cloudVoice.trim(),
     }),
   )
 }

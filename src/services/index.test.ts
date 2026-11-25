@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createOcrService } from './index'
-import { DEFAULT_OCR_MODEL, saveSettings } from '../parents/settings'
+import { DEFAULT_CLOUD_MODEL, DEFAULT_OCR_MODEL, saveSettings } from '../parents/settings'
 import type { OcrEngine } from '../parents/settings'
 
 const { openrouterRecognize, localRecognize } = vi.hoisted(() => ({
@@ -17,7 +17,15 @@ vi.mock('./ocr/tesseractOcr', () => ({
 }))
 
 function setEngine(ocrEngine: OcrEngine, apiKey = '') {
-  saveSettings({ apiKey, model: DEFAULT_OCR_MODEL, ocrEngine })
+  saveSettings({
+    apiKey,
+    model: DEFAULT_OCR_MODEL,
+    ocrEngine,
+    ttsEngine: 'local',
+    ttsVoice: '',
+    cloudModel: DEFAULT_CLOUD_MODEL,
+    cloudVoice: '',
+  })
 }
 
 describe('createOcrService', () => {

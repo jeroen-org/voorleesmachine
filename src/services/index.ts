@@ -5,6 +5,7 @@ import { createBrowserCamera } from './camera/browserCamera'
 import { createOpenRouterOcr } from './ocr/openrouterOcr'
 import { createTesseractOcr } from './ocr/tesseractOcr'
 import { createWebSpeechTts, isWebSpeechAvailable } from './tts/webSpeechTts'
+import { createOpenRouterTts } from './tts/openRouterTts'
 import { createMockCamera } from './mock/mockCamera'
 import { createMockOcr, type MockOcrOptions } from './mock/mockOcr'
 import { createMockTts } from './mock/mockTts'
@@ -43,8 +44,23 @@ export function createServices(mock: boolean): Services {
   return {
     camera: createBrowserCamera(),
     ocr: createOcrService(),
-    tts: isWebSpeechAvailable() ? createWebSpeechTts() : mockServices.tts,
+    tts: createTtsService(mockServices.tts),
   }
+}
+
+export function createTtsService(fallback: ITts): ITts {
+  const settings = loadSettings()
+  if (settings.ttsEngine === 'cloud' && settings.apiKey.trim()) {
+    return createOpenRouterTts({
+      getApiKey: () => loadSettings().apiKey,
+      getModel: () => loadSettings().cloudModel,
+      getVoice: () => loadSettings().cloudVoice,
+    })
+  }
+  if (isWebSpeechAvailable()) {
+    return createWebSpeechTts({ voiceName: loadSettings().ttsVoice || undefined })
+  }
+  return fallback
 }
 
 export function createOcrService(): IOcr {

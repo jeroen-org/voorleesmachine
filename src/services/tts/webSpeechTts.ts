@@ -32,6 +32,7 @@ export type WebSpeechTtsOptions = {
   utteranceFactory?: UtteranceFactory
   chunker?: (text: string) => string[]
   rate?: number
+  voiceName?: string
 }
 
 const NL_LANG = 'nl-NL'
@@ -42,12 +43,21 @@ export function isWebSpeechAvailable(): boolean {
   return typeof window !== 'undefined' && typeof window.speechSynthesis === 'object'
 }
 
+export function listDutchVoices(): SynthesisVoiceLike[] {
+  if (!isWebSpeechAvailable()) return []
+  const voices = window.speechSynthesis.getVoices() as unknown as SynthesisVoiceLike[]
+  return voices
+    .filter((voice) => voice.lang.toLowerCase().replace('_', '-').startsWith('nl'))
+    .sort((a, b) => Number(isHighQualityVoice(b)) - Number(isHighQualityVoice(a)))
+}
+
 export function createWebSpeechTts(options: WebSpeechTtsOptions = {}): ITts {
   const maybeSynthesis = options.synthesis ?? defaultSynthesis()
   if (!maybeSynthesis) throw new Error('Spraaksynthese is niet beschikbaar')
   const synthesis: SynthesisLike = maybeSynthesis
   const chunker = options.chunker ?? defaultChunker
   const rate = options.rate ?? DEFAULT_RATE
+  const preferredVoiceName = options.voiceName
 
   let state: TtsState = 'idle'
   let volume = 1
@@ -63,10 +73,12 @@ export function createWebSpeechTts(options: WebSpeechTtsOptions = {}): ITts {
 
   function pickVoice(): SynthesisVoiceLike | null {
     const voices = synthesis.getVoices()
-    return (
-      voices.find((voice) => voice.lang.toLowerCase().replace('_', '-').startsWith('nl')) ??
-      null
-    )
+    const dutch = voices.filter((voice) => voice.lang.toLowerCase().replace('_', '-').startsWith('nl'))
+    if (preferredVoiceName) {
+      const preferred = dutch.find((voice) => voice.name === preferredVoiceName)
+      if (preferred) return preferred
+    }
+    return dutch.find(isHighQualityVoice) ?? dutch[0] ?? null
   }
 
   function makeUtterance(chunk: string, chunkVolume: number): UtteranceLike {
@@ -153,12 +165,42 @@ function normalizeVolume(volume: number): number {
   return Math.min(1, Math.max(0, volume))
 }
 
+function isHighQualityVoice(voice: SynthesisVoiceLike): boolean {
+  return /natural|online|google|neural|premium|enhanced/i.test(voice.name ?? '')
+}
+
 export function defaultChunker(text: string): string[] {
-  return text
+  return joinWrappedLines(text)
     .split(/\n+/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean)
     .flatMap((paragraph) => splitLongParagraph(paragraph))
+}
+
+function joinWrappedLines(text: string): string {
+  const normalized = text.replace(/\r\n?/g, '\n').replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n')
+  const lines = normalized.split('\n')
+  const merged: string[] = []
+  for (const raw of lines) {
+    const line = raw.trim()
+    if (!line) {
+      merged.push('')
+      continue
+    }
+    const previous = merged[merged.length - 1]
+    if (previous && /(\p{L})-$/u.test(previous)) {
+      merged[merged.length - 1] = `${dehyphenate(previous)}${line}`
+    } else if (previous && !/[.!?…]["'”’)]?$/.test(previous)) {
+      merged[merged.length - 1] = `${previous} ${line}`
+    } else {
+      merged.push(line)
+    }
+  }
+  return merged.join('\n')
+}
+
+function dehyphenate(line: string): string {
+  return line.replace(/(\p{L})-$/u, '$1')
 }
 
 function splitLongParagraph(paragraph: string, maxLength = MAX_CHUNK_LENGTH): string[] {
@@ -176,7 +218,25 @@ function splitLongParagraph(paragraph: string, maxLength = MAX_CHUNK_LENGTH): st
     }
   }
   if (current) parts.push(current)
-  return parts
+  return parts.flatMap((part) => (part.length > maxLength ? splitOnClauses(part, maxLength) : [part]))
+}
+
+function splitOnClauses(part: string, maxLength: number): string[] {
+  const clauses = part.split(/(?<=[,;:])\s+/)
+  if (clauses.length <= 1) return [part]
+  const result: string[] = []
+  let current = ''
+  for (const clause of clauses) {
+    const candidate = current ? `${current} ${clause}` : clause
+    if (candidate.length > maxLength && current) {
+      result.push(current)
+      current = clause
+    } else {
+      current = candidate
+    }
+  }
+  if (current) result.push(current)
+  return result
 }
 
 function defaultSynthesis(): SynthesisLike | undefined {

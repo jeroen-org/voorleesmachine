@@ -8,7 +8,7 @@ Dit document beschrijft de gemaakte keuzes, de uitgevoerde stappen (met commits)
 |---|---|---|
 | Platform | PWA (React + Vite + TypeScript) eerst | Beste testbaarheid (Vitest + Playwright), werkt direct in de browser; Android via Capacitor als latere stap |
 | OCR | Standaard AI via OpenRouter (`google/gemini-2.5-flash`), of volledig lokaal via Tesseract.js (`nld`) — keuze in het ouders-menu | OpenRouter geeft zeer goede NL-kwaliteit en filtert paginanummers/bijschriften; lokale engine werkt zonder internet of sleutel en houdt foto's op het toestel |
-| TTS | Web Speech API (lokaal) | €0, direct, werkt offline op Android Chrome; cloud-stem als latere verbetering |
+| TTS | Web Speech API (lokaal) of OpenRouter-cloud-stem (`google/gemini-2.5-pro-tts`) — keuze in het ouders-menu | Lokaal is gratis/offline; cloud geeft natuurlijke intonatie met dezelfde OpenRouter-sleutel |
 | Taal | Alleen Nederlands | Kleinste scope, Nederlandstalige boeken |
 | Privacy | Foto's alleen in het geheugen, nooit bewaard | Doelgroep is kinderen (AVG-gevoelig) |
 
@@ -37,12 +37,14 @@ Dit document beschrijft de gemaakte keuzes, de uitgevoerde stappen (met commits)
 | 19 | Commit-identiteit vastgelegd | `31c26eb` | AGENTS.md: agent commit altijd als `Voorleesmachine <dev@voorleesmachine.local>`; menselijke commits blijven `jeroenvdw` | — |
 | 20 | README | — | README.md met live-URL, badges, screenshot van de live site (`docs/screenshot-home.png`), uitleg, commands, tests, deployment en privacy | — |
 | 21 | Lokale OCR-engine (Tesseract.js) | — | `tesseractOcr.ts` (IOcr) met hergebruikte worker, `nld` via CDN, cleanup van paginanummers/lege regels, timeout 90 s; `ocrEngine`-instelling (`openrouter` standaard / `local`); `createServices()` kiest de engine; ouders-menu met engine-toggle en verborgen sleutel/modelvelden bij `local` | lint/typecheck/build groen; 87 unit tests |
+| 22 | Natuurlijkere TTS + cloud-stem | — | Chunker-fix (zinnen over regeleindes samenvoegen, woordafbreking, whitespace, clause-fallback); OCR-prompt vult ontbrekende leestekens aan; `ttsEngine`-instelling (`local`/`cloud`), lokale stemkeuze + betere stemheuristiek, cloud-stem via OpenRouter `/api/v1/audio/speech` (`openRouterTts.ts`, standaard `google/gemini-2.5-pro-tts`) met dezelfde sleutel | lint/typecheck/build groen; 102 unit tests |
 
 ### Actuele status
 
 - Happy path werkt volledig op mocks (`?mock=1`) én met echte camera + OpenRouter + Web Speech; eerste gesproken woord binnen ~8 s na de foto.
 - OCR draait standaard via OpenRouter; in het ouders-menu is ook een volledig lokale Tesseract.js-engine (`nld`) te kiezen die zonder internet of sleutel werkt.
-- 87 unit tests en 3 e2e-tests slagen; `lint`, `typecheck` en `build` zijn foutloos.
+- TTS draait standaard lokaal (Web Speech); in het ouders-menu is ook een OpenRouter-cloud-stem (`google/gemini-2.5-pro-tts`) te kiezen, met dezelfde API-sleutel. De chunker voegt zinnen over regeleindes samen zodat de stem niet midden in een zin pauzeert.
+- 102 unit tests en 3 e2e-tests slagen; `lint`, `typecheck` en `build` zijn foutloos.
 - CI (GitHub Actions) draait lint, typecheck, unit tests en e2e op elke push.
 - Voor de OpenRouter-engine is een geldige API-key in het ouders-menu nodig; zonder key toont de app de sleutel-foutstate. De lokale engine heeft dat niet nodig.
 
@@ -67,8 +69,7 @@ Volgorde op volgorde van nut; elke stap = eigen commit met groene tests.
    - DoD: unit tests + e2e.
 6. **Voorleessnelheid instelbaar** in het ouders-menu (rate van de TTS, standaard 0.95).
    - DoD: instelling zichtbaar in `ITts.speak` en getest.
-7. **Cloud-stem als optie (P2)**: Google Cloud TTS Neural2 (gratis laag ≈ 1 M tekens/maand) als alternatieve TTS-provider naast Web Speech, in te stellen in het ouders-menu.
-   - DoD: `ITts`-implementatie + providerkeuze + tests; UI blijft icon-only.
+7. **Cloud-stem als optie (P2)**: ✅ gedaan (stap 22) — OpenRouter-cloud-TTS (`google/gemini-2.5-pro-tts`) als keuze in het ouders-menu, met dezelfde API-sleutel. Vervolg: rate/pitch-instellingen voor de lokale stem.
 
 ### Fase C — robuustheid (P2)
 

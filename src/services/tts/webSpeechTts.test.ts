@@ -56,6 +56,18 @@ describe('defaultChunker', () => {
   it('geeft een lege lijst bij alleen witruimte', () => {
     expect(defaultChunker('   \n  ')).toEqual([])
   })
+
+  it('voegt regels samen die midden in een zin afbreken', () => {
+    expect(defaultChunker('De kleine draak\nvloog weg.')).toEqual(['De kleine draak vloog weg.'])
+  })
+
+  it('herstelt woordafbreking aan een regeleinde', () => {
+    expect(defaultChunker('De voorle-\nesmachine is klaar.')).toEqual(['De voorleesmachine is klaar.'])
+  })
+
+  it('behoudt een pauze na een zin die eindigt op een leesteken', () => {
+    expect(defaultChunker('Eerste zin.\nTweede zin.')).toEqual(['Eerste zin.', 'Tweede zin.'])
+  })
 })
 
 describe('createWebSpeechTts', () => {

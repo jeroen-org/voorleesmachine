@@ -25,7 +25,7 @@ Bij fouten (geen tekst gevonden, geen internet, camera werkt niet, …) toont de
 
 ### Voor volwassenen: het tandwiel
 
-Linksboven op het startscherm staat een semi-transparant tandwiel. **Twee seconden ingedrukt houden** opent het verborgen instellingenmenu. Daarin kies je de OCR-engine: **OpenRouter** (met API-sleutel en AI-model) of **lokaal** (Tesseract.js, volledig op het toestel zonder internet of sleutel). De OpenRouter-sleutel staat uitsluitend in de localStorage van het toestel en wordt alleen naar OpenRouter gestuurd bij het herkennen van een pagina.
+Linksboven op het startscherm staat een semi-transparant tandwiel. **Twee seconden ingedrukt houden** opent het verborgen instellingenmenu. Daarin kies je de OCR-engine: **OpenRouter** (met API-sleutel en AI-model) of **lokaal** (Tesseract.js, volledig op het toestel zonder internet of sleutel). Ook kies je de voorleesstem: **lokaal** (de stemmen van het toestel) of **cloud** (OpenRouter, standaard `google/gemini-2.5-pro-tts`, met dezelfde API-sleutel). De OpenRouter-sleutel staat uitsluitend in de localStorage van het toestel en wordt alleen naar OpenRouter gestuurd bij het herkennen of voorlezen van een pagina.
 
 ## Onder de motorkap
 
@@ -33,7 +33,7 @@ Linksboven op het startscherm staat een semi-transparant tandwiel. **Twee second
 |---|---|
 | Camera | Web `getUserMedia`, achtercamera, frame via canvas (max. 1600 px JPEG) |
 | Tekstherkenning | [OpenRouter](https://openrouter.ai) (standaard `google/gemini-2.5-flash`) met "verzin niets"-regel en `GEEN_TEKST`-sentinel tegen hallucinaties, of volledig lokaal via [Tesseract.js](https://github.com/naptha/tesseract.js) (taal `nld`) — keuze in het ouders-menu |
-| Voorlezen | Web Speech API (`speechSynthesis`), Nederlandse stem, tekst in stukken per alinea/zin |
+| Voorlezen | Web Speech API (`speechSynthesis`), Nederlandse stem, tekst in stukken per alinea/zin; of cloud-stem via [OpenRouter](https://openrouter.ai) (`google/gemini-2.5-pro-tts`) — keuze in het ouders-menu |
 | PWA | Manifest, service worker met offline-shell, installeerbaar op Android |
 | Framework | React 19 + TypeScript (strict) + Vite |
 

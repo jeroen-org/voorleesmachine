@@ -15,6 +15,7 @@ const USER_PROMPT = `Bekijk de foto en geef ALLEEN de voorleestekst terug die le
 - Verzin niets: gebruik uitsluitend tekst die je echt op de foto ziet.
 - Staat er geen leesbare voorleestekst op (bijvoorbeeld een lege pagina, een wazige of donkere foto, of helemaal geen tekst)? Antwoord dan uitsluitend met GEEN_TEKST.
 - Houd de oorspronkelijke spelling en interpunctie aan.
+- Mist een zin een afsluitend leesteken (punt, vraagteken of uitroepteken)? Voeg dat dan op een logische leesplek toe, zonder ook maar één woord te wijzigen.
 - Laat paginanummers, uitgeverstekst, bijschriften bij tekeningen en decortekst weg.
 - Volg de leesvolgorde van de pagina, kolom voor kolom van boven naar beneden.
 - Zet elke alinea op een eigen regel.

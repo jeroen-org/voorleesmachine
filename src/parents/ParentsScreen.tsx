@@ -1,12 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
-import { DEFAULT_OCR_MODEL, loadSettings, saveSettings, type OcrEngine } from './settings'
+import {
+  DEFAULT_CLOUD_MODEL,
+  DEFAULT_OCR_MODEL,
+  loadSettings,
+  saveSettings,
+  type OcrEngine,
+  type TtsEngine,
+} from './settings'
 import { CheckIcon, KeySlashIcon, XIcon } from '../components/icons'
 import { L } from '../components/labels'
+import { listDutchVoices } from '../services/tts/webSpeechTts'
 
 export function ParentsScreen({ onBack }: { onBack: () => void }) {
   const [apiKey, setApiKey] = useState('')
   const [model, setModel] = useState(DEFAULT_OCR_MODEL)
   const [ocrEngine, setOcrEngine] = useState<OcrEngine>('openrouter')
+  const [ttsEngine, setTtsEngine] = useState<TtsEngine>('local')
+  const [ttsVoice, setTtsVoice] = useState('')
+  const [cloudModel, setCloudModel] = useState(DEFAULT_CLOUD_MODEL)
+  const [cloudVoice, setCloudVoice] = useState('')
+  const [voices, setVoices] = useState<string[]>([])
   const [keyStored, setKeyStored] = useState(false)
   const [saved, setSaved] = useState(false)
   const timerRef = useRef<number | null>(null)
@@ -16,7 +29,19 @@ export function ParentsScreen({ onBack }: { onBack: () => void }) {
     setApiKey(settings.apiKey)
     setModel(settings.model)
     setOcrEngine(settings.ocrEngine)
+    setTtsEngine(settings.ttsEngine)
+    setTtsVoice(settings.ttsVoice)
+    setCloudModel(settings.cloudModel)
+    setCloudVoice(settings.cloudVoice)
     setKeyStored(settings.apiKey.trim().length > 0)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
+    const update = () => setVoices(listDutchVoices().map((voice) => voice.name ?? '').filter(Boolean))
+    update()
+    window.speechSynthesis.addEventListener('voiceschanged', update)
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', update)
   }, [])
 
   useEffect(() => {
@@ -26,7 +51,7 @@ export function ParentsScreen({ onBack }: { onBack: () => void }) {
   }, [])
 
   const save = () => {
-    saveSettings({ apiKey, model, ocrEngine })
+    saveSettings({ apiKey, model, ocrEngine, ttsEngine, ttsVoice, cloudModel, cloudVoice })
     setKeyStored(apiKey.trim().length > 0)
     setSaved(true)
     if (timerRef.current !== null) clearTimeout(timerRef.current)
@@ -34,6 +59,7 @@ export function ParentsScreen({ onBack }: { onBack: () => void }) {
   }
 
   const openrouter = ocrEngine === 'openrouter'
+  const cloudTts = ttsEngine === 'cloud'
 
   return (
     <main className="screen parents-screen">
@@ -93,6 +119,69 @@ export function ParentsScreen({ onBack }: { onBack: () => void }) {
             </label>
           </>
         )}
+
+        <div className="parents-field">
+          <span>{L.ttsEngine}</span>
+          <div className="parents-toggle" role="group" aria-label={L.ttsEngine}>
+            <button
+              type="button"
+              className={`parents-toggle-btn ${!cloudTts ? 'active' : ''}`}
+              aria-pressed={!cloudTts}
+              onClick={() => setTtsEngine('local')}
+            >
+              {L.ttsEngineLocal}
+            </button>
+            <button
+              type="button"
+              className={`parents-toggle-btn ${cloudTts ? 'active' : ''}`}
+              aria-pressed={cloudTts}
+              onClick={() => setTtsEngine('cloud')}
+            >
+              {L.ttsEngineCloud}
+            </button>
+          </div>
+        </div>
+
+        {!cloudTts && voices.length > 0 && (
+          <label className="parents-field">
+            <span>{L.ttsVoice}</span>
+            <select value={ttsVoice} onChange={(event) => setTtsVoice(event.target.value)}>
+              <option value="">{L.ttsVoiceDefault}</option>
+              {voices.map((voice) => (
+                <option key={voice} value={voice}>
+                  {voice}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {cloudTts && (
+          <>
+            <label className="parents-field">
+              <span>{L.cloudModel}</span>
+              <input
+                type="text"
+                value={cloudModel}
+                autoComplete="off"
+                spellCheck={false}
+                onChange={(event) => setCloudModel(event.target.value)}
+              />
+            </label>
+            <label className="parents-field">
+              <span>{L.cloudVoice}</span>
+              <input
+                type="text"
+                value={cloudVoice}
+                autoComplete="off"
+                spellCheck={false}
+                onChange={(event) => setCloudVoice(event.target.value)}
+              />
+            </label>
+            <p className="parents-note">{L.cloudNote}</p>
+          </>
+        )}
+
         <button
           type="button"
           className={`big-button md ${saved ? 'btn-green' : 'btn-orange'}`}

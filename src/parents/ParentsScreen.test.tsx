@@ -19,7 +19,7 @@ describe('ParentsScreen', () => {
     await user.type(screen.getByLabelText('AI-model'), 'google/gemini-2.0-flash-001')
     await user.click(screen.getByRole('button', { name: L.saveSettings }))
 
-    expect(loadSettings(window.localStorage)).toEqual({
+    expect(loadSettings(window.localStorage)).toMatchObject({
       apiKey: 'sk-or-test-123',
       model: 'google/gemini-2.0-flash-001',
       ocrEngine: 'openrouter',
@@ -47,5 +47,22 @@ describe('ParentsScreen', () => {
 
     await user.click(screen.getByRole('button', { name: L.saveSettings }))
     expect(loadSettings(window.localStorage).ocrEngine).toBe('local')
+  })
+
+  it('toont cloud-stemvelden bij de cloud-TTS-engine en bewaart die', async () => {
+    const user = userEvent.setup()
+    render(<ParentsScreen onBack={() => {}} />)
+
+    expect(screen.queryByLabelText(L.cloudModel)).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: L.ttsEngineCloud }))
+    expect(screen.getByLabelText(L.cloudModel)).toBeInTheDocument()
+
+    await user.clear(screen.getByLabelText(L.cloudModel))
+    await user.type(screen.getByLabelText(L.cloudModel), 'elevenlabs/eleven-v3')
+    await user.click(screen.getByRole('button', { name: L.saveSettings }))
+
+    const settings = loadSettings(window.localStorage)
+    expect(settings.ttsEngine).toBe('cloud')
+    expect(settings.cloudModel).toBe('elevenlabs/eleven-v3')
   })
 })

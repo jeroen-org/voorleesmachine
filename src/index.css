@@ -434,7 +434,8 @@ button:disabled {
   color: #44403c;
 }
 
-.parents-field input {
+.parents-field input,
+.parents-field select {
   font: inherit;
   font-size: 16px;
   padding: 14px 16px;
@@ -444,7 +445,8 @@ button:disabled {
   color: var(--ink);
 }
 
-.parents-field input:focus-visible {
+.parents-field input:focus-visible,
+.parents-field select:focus-visible {
   outline: 4px solid var(--blue-border);
   outline-offset: 2px;
 }
