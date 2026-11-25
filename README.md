@@ -2,10 +2,10 @@
 
 Een spraakmakende voorlees-app voor kinderen: maak met één grote knop een foto van een boekpagina, en de app leest de tekst voor in het Nederlands.
 
-**Live: [jeroenvdw.github.io/voorleesmachine](https://jeroenvdw.github.io/voorleesmachine/)**
+**Live: [jeroen-org.github.io/voorleesmachine](https://jeroen-org.github.io/voorleesmachine/)**
 
-[![CI](https://github.com/jeroenvdw/voorleesmachine/actions/workflows/ci.yml/badge.svg)](https://github.com/jeroenvdw/voorleesmachine/actions/workflows/ci.yml)
-[![Deploy](https://github.com/jeroenvdw/voorleesmachine/actions/workflows/deploy.yml/badge.svg)](https://github.com/jeroenvdw/voorleesmachine/actions/workflows/deploy.yml)
+[![CI](https://github.com/jeroen-org/voorleesmachine/actions/workflows/ci.yml/badge.svg)](https://github.com/jeroen-org/voorleesmachine/actions/workflows/ci.yml)
+[![Deploy](https://github.com/jeroen-org/voorleesmachine/actions/workflows/deploy.yml/badge.svg)](https://github.com/jeroen-org/voorleesmachine/actions/workflows/deploy.yml)
 
 ![Startscherm van de Voorleesmachine](docs/screenshot-home.png)
 
