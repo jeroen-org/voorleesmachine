@@ -47,11 +47,26 @@ export function createServices(mock: boolean): Services {
   }
 }
 
-function createOcrService(): IOcr {
-  const settings = loadSettings()
-  if (settings.ocrEngine === 'local') return createTesseractOcr()
-  return createOpenRouterOcr({
-    getApiKey: () => loadSettings().apiKey,
-    getModel: () => loadSettings().model,
-  })
+export function createOcrService(): IOcr {
+  let openrouter: IOcr | null = null
+  let local: IOcr | null = null
+  const openrouterFor = (): IOcr => {
+    if (!openrouter) {
+      openrouter = createOpenRouterOcr({
+        getApiKey: () => loadSettings().apiKey,
+        getModel: () => loadSettings().model,
+      })
+    }
+    return openrouter
+  }
+  const localFor = (): IOcr => {
+    if (!local) local = createTesseractOcr()
+    return local
+  }
+  return {
+    recognize(image, signal) {
+      const engine = loadSettings().ocrEngine
+      return (engine === 'local' ? localFor() : openrouterFor()).recognize(image, signal)
+    },
+  }
 }
