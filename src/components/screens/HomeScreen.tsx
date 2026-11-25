@@ -1,6 +1,5 @@
 import { useRef } from 'react'
 import type { VoorleesActions } from '../useVoorlees'
-import { HoldToOpenButton } from '../HoldToOpenButton'
 import { CameraIcon, GalleryIcon, GearIcon } from '../icons'
 import { L } from '../labels'
 
@@ -15,7 +14,14 @@ export function HomeScreen({
 
   return (
     <main className="screen home-screen">
-      <HoldToOpenButton label={L.parents} icon={<GearIcon />} onOpen={onOpenParents} />
+      <button
+        type="button"
+        className="corner-gear"
+        aria-label={L.parents}
+        onClick={onOpenParents}
+      >
+        <GearIcon />
+      </button>
       <button
         type="button"
         className="big-button xl btn-green"

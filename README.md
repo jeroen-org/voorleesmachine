@@ -25,7 +25,7 @@ Bij fouten (geen tekst gevonden, geen internet, camera werkt niet, …) toont de
 
 ### Voor volwassenen: het tandwiel
 
-Linksboven op het startscherm staat een semi-transparant tandwiel. **Twee seconden ingedrukt houden** opent het verborgen instellingenmenu. Daarin kies je de OCR-engine: **OpenRouter** (met API-sleutel en AI-model) of **lokaal** (Tesseract.js, volledig op het toestel zonder internet of sleutel). Ook kies je de voorleesstem: **lokaal** (de stemmen van het toestel) of **cloud** (OpenRouter, standaard `google/gemini-2.5-pro-tts`, met dezelfde API-sleutel). De OpenRouter-sleutel staat uitsluitend in de localStorage van het toestel en wordt alleen naar OpenRouter gestuurd bij het herkennen of voorlezen van een pagina.
+Linksboven op het startscherm staat een semi-transparant tandwiel. Eén tik erop opent het verborgen instellingenmenu (de pagina is scrollbaar als de inhoud niet past). Daarin kies je de OCR-engine: **OpenRouter** (met API-sleutel en AI-model) of **lokaal** (Tesseract.js, volledig op het toestel zonder internet of sleutel). Ook kies je de voorleesstem: **lokaal** (de stemmen van het toestel) of **cloud** (OpenRouter, standaard `google/gemini-2.5-pro-tts`, met dezelfde API-sleutel). De OpenRouter-sleutel staat uitsluitend in de localStorage van het toestel en wordt alleen naar OpenRouter gestuurd bij het herkennen of voorlezen van een pagina.
 
 ## Onder de motorkap
 

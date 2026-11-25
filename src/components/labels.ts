@@ -14,7 +14,7 @@ export const L = {
   softer: 'Stiller',
   nextPage: 'Volgende pagina',
   retry: 'Probeer opnieuw',
-  parents: 'Instellingen voor volwassenen, twee seconden ingedrukt houden',
+  parents: 'Instellingen voor volwassenen',
   backToApp: 'Terug naar de app',
   volume: 'Volume',
   saveSettings: 'Instellingen opslaan',

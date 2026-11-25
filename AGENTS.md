@@ -43,7 +43,7 @@ De orchestratie (foto → OCR → voorlezen) staat in de state machine (`src/dom
 
 ## Het tandwiel-icoon (ouders-menu)
 
-Het tandwiel staat linksboven op het startscherm en is bewust semi-transparant: kinderen kunnen er zo weinig mee. **2 seconden ingedrukt houden** opent het verborgen ouders-menu (`src/parents/ParentsScreen.tsx`, detectie via `HoldToOpenButton.tsx`). Daarin staat:
+Het tandwiel staat linksboven op het startscherm en is bewust semi-transparant: kinderen kunnen er zo weinig mee. Eén tik opent het verborgen ouders-menu (`src/parents/ParentsScreen.tsx`); de instellingenpagina is scrollbaar wanneer de inhoud langer is dan het scherm. Daarin staat:
 
 - **OCR-engine** — keuze tussen `openrouter` (standaard) en `local` (Tesseract.js, volledig op het toestel). Bij `local` worden de sleutel- en modelvelden verborgen.
 - **Geheime sleutel (OpenRouter)** — de API-key die de OCR-service nodig heeft; alleen zichtbaar bij de OpenRouter-engine; opgeslagen in localStorage onder sleutel `voorleesmachine:settings` en uitsluitend naar OpenRouter verstuurd bij het herkennen van een pagina.
