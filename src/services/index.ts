@@ -1,6 +1,6 @@
 import type { ICamera } from './camera/ICamera'
 import type { IOcr } from './ocr/IOcr'
-import type { ITts } from './tts/ITts'
+import type { ITts, TtsStateListener } from './tts/ITts'
 import { createBrowserCamera } from './camera/browserCamera'
 import { createOpenRouterOcr } from './ocr/openrouterOcr'
 import { createTesseractOcr } from './ocr/tesseractOcr'
@@ -9,7 +9,7 @@ import { createOpenRouterTts } from './tts/openRouterTts'
 import { createMockCamera } from './mock/mockCamera'
 import { createMockOcr, type MockOcrOptions } from './mock/mockOcr'
 import { createMockTts } from './mock/mockTts'
-import { loadSettings } from '../parents/settings'
+import { loadSettings, type TtsEngine } from '../parents/settings'
 
 export type Services = {
   camera: ICamera
@@ -49,18 +49,76 @@ export function createServices(mock: boolean): Services {
 }
 
 export function createTtsService(fallback: ITts): ITts {
-  const settings = loadSettings()
-  if (settings.ttsEngine === 'cloud' && settings.apiKey.trim()) {
-    return createOpenRouterTts({
-      getApiKey: () => loadSettings().apiKey,
-      getModel: () => loadSettings().cloudModel,
-      getVoice: () => loadSettings().cloudVoice,
+  let local: ITts | null = null
+  let cloud: ITts | null = null
+  let active: ITts = fallback
+  let activeKind: TtsEngine | '' = ''
+  let unsubscribe: (() => void) | null = null
+  const listeners = new Set<TtsStateListener>()
+
+  const localFor = (): ITts => {
+    if (!local) {
+      local = isWebSpeechAvailable()
+        ? createWebSpeechTts({ voiceName: loadSettings().ttsVoice || undefined })
+        : fallback
+    }
+    return local
+  }
+
+  const cloudFor = (): ITts => {
+    if (!cloud) {
+      cloud = createOpenRouterTts({
+        getApiKey: () => loadSettings().apiKey,
+        getModel: () => loadSettings().cloudModel,
+        getVoice: () => loadSettings().cloudVoice,
+      })
+    }
+    return cloud
+  }
+
+  const resolveKind = (): TtsEngine => {
+    const settings = loadSettings()
+    if (settings.ttsEngine === 'cloud' && settings.apiKey.trim()) return 'cloud'
+    return 'local'
+  }
+
+  const activate = (): ITts => {
+    const kind = resolveKind()
+    if (kind === activeKind) return active
+    if (unsubscribe) unsubscribe()
+    active.stop()
+    active = kind === 'cloud' ? cloudFor() : localFor()
+    activeKind = kind
+    unsubscribe = active.onStateChange((state) => {
+      for (const listener of listeners) listener(state)
     })
+    return active
   }
-  if (isWebSpeechAvailable()) {
-    return createWebSpeechTts({ voiceName: loadSettings().ttsVoice || undefined })
+
+  return {
+    speak(text, opts) {
+      activate().speak(text, opts)
+    },
+    pause() {
+      activate().pause()
+    },
+    resume() {
+      activate().resume()
+    },
+    stop() {
+      activate().stop()
+    },
+    setVolume(next) {
+      activate().setVolume(next)
+    },
+    onStateChange(listener) {
+      activate()
+      listeners.add(listener)
+      return () => {
+        listeners.delete(listener)
+      }
+    },
   }
-  return fallback
 }
 
 export function createOcrService(): IOcr {
